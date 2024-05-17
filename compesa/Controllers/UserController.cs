@@ -1,8 +1,7 @@
 ﻿using compesa.Models;
-using Microsoft.AspNetCore.Http;
+using compesa.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 
 namespace compesa.Controllers
 {
@@ -10,52 +9,109 @@ namespace compesa.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserContext _userContext;
+        private readonly DataContext _dataContext;
 
-        public UserController(UserContext userContext)
+        public UserController(DataContext dataContext)
         {
-            this._userContext = userContext;
+            this._dataContext = dataContext;
         }
 
-        [HttpGet("/getUsers")]
-        public async Task<ActionResult<List<User>>> GetUsers()
+        [HttpGet("login")]
+        public IActionResult getLogin(int UserId, string UserPass)
         {
-            var result = await _userContext.Users.Select(
-                s => new User
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    Email = s.Email,
-                    Password = s.Password,
-                    Login = s.Login,
-                }
-            ).ToListAsync();
+            var result = _dataContext.Usuario.FromSqlRaw(Configuration.SearchUser(UserId)).ToList();
 
-            if (result.Count < 0 ) 
-            { 
-                return NotFound();
+            if(result.Count < 1)
+            {
+                return NotFound(new { msg = "Usuário não foi encontrado!" });
             } else
             {
-                return result;
+                var user = result[0];
+
+                if(user != null)
+                {
+                    if(user.Senha != UserPass)
+                    {
+                        return Unauthorized(new { msg = "Senha incorreta"  });
+                    } 
+
+                    var permissions = _dataContext.Permissions.FromSqlRaw(Configuration.GetPermissions(UserId)).ToList();
+
+                    List<string> permissionList = new();
+
+                    foreach (var permission in permissions)
+                    {
+                        permissionList.Add(permission.Nome);
+                    }
+
+                    UserReturn userReturn = new()
+                    {
+                        User_Id = user.ID_Usuario,
+                        name = user.Nome,
+                        Permissions = permissionList
+                    };
+
+                    if(userReturn != null)
+                    {
+                        string token = JWT.CreateToken(userReturn);
+                        return Ok(new TokenDTO { Token = token });
+                    }
+                }
             }
+
+            return BadRequest();
+            
         }
 
-        [HttpPost("/insertUser")]
-        public async Task<HttpStatusCode> InsertUser(User _user)
+        /*[HttpGet("login")]
+        public IActionResult Get(int UserId, string UserPass)
         {
-            var newUser = new User()
+            var result = _dataContext.UserTestes.FromSqlRaw(Configuration.SearchUser(UserId)).ToList();
+
+            if(result.Count < 1)
             {
-                Id = _user.Id,
-                Name = _user.Name,
-                Email = _user.Email,
-                Password = _user.Password,
-                Login = _user.Login,
-            };
+                return NotFound(new {msg = "Usuário não foi encontrado!"});
+            } else
+            {
+                var user = result.FirstOrDefault();
 
-            _userContext.Users.Add(newUser);
-            await _userContext.SaveChangesAsync();
 
-            return HttpStatusCode.OK;
-        }
+                if(user != null)
+                {
+                    if(user.Password != UserPass)
+                    {
+                        return Unauthorized(new { msg = "Senha incorreta" });
+                    }
+                    var permissions = _dataContext.Permissions.FromSqlRaw(Configuration.GetPermissions(UserId)).ToList();
+                    List<string> permissionList = [];
+                    permissions.ForEach(permission =>
+                    {
+                        permissionList.Add(permission.Name);
+                    });
+
+                    User newUserData = new()
+                    {
+                        Id = user.Id,
+                        Name = user.Name,
+                        PermissionList = permissionList
+                    };
+
+
+                    if (user != null)
+                    {
+                        var token = JWT.CreateToken(newUserData);
+                        return Ok(new TokenDTO { Token = token });
+                    }
+                    else
+                    {
+                        return NotFound(new { msg = "Usuário não foi encontrado!" });
+                    }
+                } else
+                {
+                    return NotFound(new { msg = "Usuário não foi encontrado!" });
+                }
+            }
+
+        }*/
     }
 }
