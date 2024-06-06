@@ -11,11 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(opt =>
 {
-    opt.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200");
-        });
+    opt.AddPolicy("AllowOrigin",
+        builder => builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("Content-Disposition"));
 });
 
 // Add services to the container.
@@ -56,7 +56,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors("AllowOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();

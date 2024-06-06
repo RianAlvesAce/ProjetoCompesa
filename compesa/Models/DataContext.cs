@@ -7,11 +7,14 @@ namespace compesa.Models
         public DbSet<User> Usuario { get; set; }
         public DbSet<UserTeste> UserTestes { get; set; }
         public DbSet<UserPermissions> Permissions { get; set; }
+        public DbSet<UnidadeQuant> unidadeQuants { get; set; }
         public DbSet<Module> Modules { get; set; }
         public DbSet<LigModUser> Lig_Mod_User { get; set; }
         public DbSet<UserMod> UserMod { get; set; }
-        public DbSet<Ocorrencia> Ocorrencias { get; set; }
+        public DbSet<GetOcorrencia> Ocorrencias { get; set; }
+        public DbSet<Ocorrencia> ocorrencia {  get; set; }
         public DbSet<Unidade> Unidades { get; set; }
+        public DbSet<Tipo> Tipos { get; set; }
 
         public DataContext()
         {

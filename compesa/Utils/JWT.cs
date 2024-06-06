@@ -38,7 +38,7 @@ namespace compesa.Utils
             {
                 Subject = GenerateClaims(user),
                 SigningCredentials = credentials,
-                Expires = DateTime.UtcNow.AddMinutes(5),
+                Expires = DateTime.UtcNow.AddHours(5),
                 Audience = "http://localhost:5055/",
                 Issuer = "http://localhost:5055/"
             };

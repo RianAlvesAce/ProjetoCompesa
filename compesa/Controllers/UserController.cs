@@ -17,9 +17,9 @@ namespace compesa.Controllers
         }
 
         [HttpGet("login")]
-        public IActionResult getLogin(int UserId, string UserPass)
+        public IActionResult getLogin(string UserNick, string UserPass)
         {
-            var result = _dataContext.Usuario.FromSqlRaw(Configuration.SearchUser(UserId)).ToList();
+            var result = _dataContext.Usuario.FromSqlRaw(Configuration.SearchUser(UserNick)).ToList();
 
             if(result.Count < 1)
             {
@@ -35,7 +35,7 @@ namespace compesa.Controllers
                         return Unauthorized(new { msg = "Senha incorreta"  });
                     } 
 
-                    var permissions = _dataContext.Permissions.FromSqlRaw(Configuration.GetPermissions(UserId)).ToList();
+                    var permissions = _dataContext.Permissions.FromSqlRaw(Configuration.GetPermissions(user.ID_Usuario)).ToList();
 
                     List<string> permissionList = new();
 
